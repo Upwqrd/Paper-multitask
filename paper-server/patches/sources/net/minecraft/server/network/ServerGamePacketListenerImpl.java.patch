@@ -1197,7 +1197,7 @@
                  BlockPos pos = blockHit.getBlockPos();
                  if (this.player.isWithinBlockInteractionRange(pos, 1.0)) {
                      Vec3 distance = location.subtract(Vec3.atCenterOf(pos));
-@@ -1434,9 +_,13 @@
+@@ -1434,9 +_,20 @@
                              this.player.sendBuildLimitMessage(false, minY);
                          } else {
                              SwingAnimation swingAnimation = itemStack.getInteractAnimation();
@@ -1209,7 +1209,14 @@
 -                            } else if (this.awaitingPositionFromClient == null && level.mayInteract(this.player, pos)) {
 +                            } else if (this.awaitingPositionFromClient == null && (level.mayInteract(this.player, pos) || passthroughSignInteraction)) {
 +                                // Paper end - Allow using signs inside spawn protection
-+                                this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
++                                boolean keepEating = this.player.isUsingItem()
++                                    && hand != this.player.getUsedItemHand()
++                                    && this.player.getUseItem().has(net.minecraft.core.component.DataComponents.FOOD)
++                                    && (itemStack.is(net.minecraft.world.item.Items.END_CRYSTAL)
++                                        || itemStack.getItem() instanceof net.minecraft.world.item.BlockItem);
++                                if (!keepEating) {
++                                    this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
++                                }
                                  InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
                                  if (interactionResult.consumesAction()) {
                                      CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, blockHit.getBlockPos(), itemStack);
